@@ -3,6 +3,11 @@
 #include <cmath>
 #include <cstddef>
 #include <ostream>
+#include <vector>
+
+
+const int HASH_BASE = 42;
+
 
 
 class Edge {
@@ -14,11 +19,11 @@ public:
     }
 
     Edge(int v) {
-        this->e = {v, 0};
+        this->e = {std::abs(v), 0};
     }
 
     Edge(int v, int u) {
-        this->e = {v, u};
+        this->e = {std::abs(v), std::abs(u)};
     }
 
     Edge(std::size_t v, std::size_t u) {
@@ -26,7 +31,7 @@ public:
     }
 
     Edge(std::pair<int, int> e) {
-        this->e = {e.first, e.second};
+        this->e = {std::abs(e.first), std::abs(e.second)};
     }
 
     Edge(std::pair<std::size_t, std::size_t> e) {
@@ -74,6 +79,22 @@ template<std::size_t size>
 class Graph {
 private:
     std::array<std::array<bool, size>, size> m;
+
+    long double _get_hash(std::size_t current, std::size_t parent,  std::vector<std::vector<std::size_t>> &graph) const {
+        long double current_hash = HASH_BASE;
+        std::vector<long double> sons_hash;
+        for (auto &u : graph[current]) {
+            if (u != parent) {
+               sons_hash.push_back(_get_hash(u, current, graph)); 
+            }
+        }
+        std::sort(sons_hash.begin(), sons_hash.end());
+        for (auto &hash : sons_hash) {
+            current_hash += std::log(hash);
+        }
+        return current_hash;
+    }
+
 public:
     Graph() {
         for (std::size_t i = 0; i < size; ++i) {
@@ -182,6 +203,23 @@ public:
     template<std::size_t nsize>
     friend void dfs(std::size_t vertex, const Graph<nsize>& graph, std::vector<bool>& used);
 
+    long double get_hash(std::size_t root) const {
+        auto self_modified = (*this).convert_to_list();
+        return _get_hash(root, root, self_modified);
+    }
+
+    std::vector<std::vector<std::size_t>> convert_to_list() const {
+        std::vector<std::vector<std::size_t>> new_graph(size);
+        for (std::size_t i = 0; i < size; ++i) {
+            for (std::size_t j = 0; j < size; ++j) {
+                if ((*this)[i, j]) {
+                    new_graph[i].push_back(j);
+                }
+            }
+        }
+        return new_graph;
+    }
+
 
     // operation between Graph and Graph
     Graph<size> operator+(const Graph<size>& other) {
@@ -209,43 +247,14 @@ public:
     }
 
     bool operator%(const Graph<size>& other) {
-        std::vector<int> permutation(size);
-        for (std::size_t i = 0; i < size; ++i) {
-            permutation[i] = i;
+        long double self_hash = get_hash(0);
+
+        auto other_modified = other.convert_to_list();
+        for (std::size_t other_root = 0; other_root < size; ++other_root) {
+            if (self_hash == _get_hash(other_root, other_root, other_modified)) {
+                return true;
+            }
         }
-
-        Graph<size> permutated_graph(*this);
-
-        do {
-            // generate new permutated graph
-            for (std::size_t i = 0; i < size; ++i) {
-                for (std::size_t j = i; j < size; ++j) {
-                    permutated_graph -= {i, j};
-                }
-            }
-            for (std::size_t i = 0; i < size; ++i) {
-                for (std::size_t j = i; j < size; ++j) {
-                    if ((*this)[i, j]) {
-                        permutated_graph += {permutation[i], permutation[j]};
-                    }
-                }
-            }
-
-            /*
-            std::cout << permutated_graph << std::endl;
-            std::cout << other << std::endl;
-            for (std::size_t i = 0; i < size; ++i) {
-                std::cout << permutation[i] << " ";
-            }
-            std::cout << std::endl;
-            std::cout << std::endl;
-            */
-
-            // check if permutated graph is equal to other
-            if (permutated_graph == other) {
-               return true;
-            }
-        } while (std::next_permutation(permutation.begin(), permutation.end()));
         return false;
     }
 
@@ -298,6 +307,9 @@ bool operator>(const Edge& edge, const Graph<size>& graph) {
 
 template<std::size_t size>
 Graph<size> operator+(const Graph<size>& graph, const Edge& edge) {
+    if (size <= edge[0] || size <= edge[1]) {
+        throw "Error - graph + edge operator: incorrect edge";
+    }
     Graph<size> new_graph(graph);
     new_graph.m[edge[0]][edge[1]] = true;
     new_graph.m[edge[1]][edge[0]] = true;
@@ -306,6 +318,9 @@ Graph<size> operator+(const Graph<size>& graph, const Edge& edge) {
 
 template<std::size_t size>
 Graph<size> operator-(const Graph<size>& graph, const Edge& edge) {
+    if (size <= edge[0] || size <= edge[1]) {
+        throw "Error - graph - edge operator: incorrect edge";
+    }
     Graph<size> new_graph(graph);
     new_graph.m[edge[0]][edge[1]] = false;
     new_graph.m[edge[1]][edge[0]] = false;
@@ -314,6 +329,9 @@ Graph<size> operator-(const Graph<size>& graph, const Edge& edge) {
 
 template<std::size_t size>
 Graph<size>& operator+=(Graph<size>& graph, const Edge& edge) {
+    if (size <= edge[0] || size <= edge[1]) {
+        throw "Error - graph += edge operator: incorrect edge";
+    }
     graph.m[edge[0]][edge[1]] = true;
     graph.m[edge[1]][edge[0]] = true;
     return graph;
@@ -321,6 +339,9 @@ Graph<size>& operator+=(Graph<size>& graph, const Edge& edge) {
 
 template<std::size_t size>
 Graph<size>& operator-=(Graph<size>& graph, const Edge& edge) {
+    if (size <= edge[0] || size <= edge[1]) {
+        throw "Error - graph -= edge operator: incorrect edge";
+    }
     graph.m[edge[0]][edge[1]] = false;
     graph.m[edge[1]][edge[0]] = false;
     return graph;
@@ -365,7 +386,8 @@ std::ostream& operator<<(std::ostream& os, const Graph<size>& graph) {
 }
 
 int main(int argc, char *argv[]) {
-    const int size = 8;
+    std::vector<int> correct_cnt_tree = {1, 1, 1, 1, 2, 3, 6, 11, 23, 47, 106, 235};
+    const int size = 10;
 
     std::vector<bool> combinations(size * (size - 1) / 2);
     std::vector<std::pair<int, int>> indexes(size * (size - 1) / 2);
@@ -373,7 +395,6 @@ int main(int argc, char *argv[]) {
 
     Graph<size> graph;
 
-    auto start = std::chrono::high_resolution_clock::now();
     int step = 0;
     int first_v = 0, second_v = 1;
     int curr_size = size - 1;
@@ -393,8 +414,15 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Indexes were generated." << std::endl;
 
-    std::vector<Graph<size>> all_trees;
+    std::vector<Graph<size>> not_ismorfic;
+    auto start = std::chrono::high_resolution_clock::now();
+
+    int cnt = 0;
+
     do {
+        if (cnt % 1000000 == 0) {
+            std::cout << "Reach step: " << cnt << std::endl;
+        }
         for (int i = 0; i < int(combinations.size()); ++i) {
             if (combinations[i]) {
                 graph += indexes[i];
@@ -403,41 +431,31 @@ int main(int argc, char *argv[]) {
             }
         }
         if (~graph) {
-            all_trees.push_back(graph);
-        }
-    } while (std::prev_permutation(combinations.begin(), combinations.end()));
-    
-    std::cout << "All trees were generated." << std::endl;
-    std::cout << "Number of trees: " << all_trees.size() << std::endl;
+            bool was_same = false;
+            for (int j = 0; j < int(not_ismorfic.size()); ++j) {
+                if (graph % not_ismorfic[j]) {
+                    was_same = true;
+                    //std::cout << i << " " << j << std::endl;
+                    break;
+                }
+            }
 
-    std::vector<Graph<size>> not_ismorfic;
-    for (int i = 0; i < int(all_trees.size()); ++i) {
-        //std::cout << i << "/" << int(all_trees.size()) << "; non-isomorfic: " << int(not_ismorfic.size()) << std::endl;
-        bool was_same = false;
-        for (int j = 0; j < int(not_ismorfic.size()); ++j) {
-            if (all_trees[i] % not_ismorfic[j]) {
-                was_same = true;
-                //std::cout << i << " " << j << std::endl;
+            if (!was_same) {
+                not_ismorfic.push_back(graph);
+                std::cout << cnt << " - step" << std::endl;
+                std::cout << not_ismorfic.size() << " - found" << std::endl;
+                std::cout << std::endl;
+            }
+            if (correct_cnt_tree[size] == int(not_ismorfic.size())) {
                 break;
             }
         }
-
-        if (!was_same) {
-            not_ismorfic.push_back(all_trees[i]);
-        }
-    }
+        ++cnt;
+    } while (std::prev_permutation(combinations.begin(), combinations.end()));
     auto stop = std::chrono::high_resolution_clock::now();
     double duration = double((std::chrono::duration_cast<std::chrono::microseconds>(stop - start)).count()) / 1000.0;
+    std::cout << "All trees were generated." << std::endl;
     std::cout << "Non-isomorfic trees were found." << std::endl;
-
-    /*
-    std::cout << all_trees.size() << std::endl;
-    for (int i = 0; i < int(all_trees.size()); ++i) {
-        std::cout << all_trees[i] << std::endl << std::endl;
-    }
-    */
- 
-    //std::cout << all_trees[1] % all_trees[2] << std::endl;
 
     std::cout << not_ismorfic.size() << std::endl;
     for (int i = 0; i < int(not_ismorfic.size()); ++i) {
