@@ -1,13 +1,13 @@
 #include <algorithm>
-#include <bits/stdc++.h>
+#include <iostream>
 #include <cmath>
 #include <cstddef>
 #include <ostream>
 #include <vector>
+#include <chrono>
 
 
 const int HASH_BASE = 42;
-
 
 
 class Edge {
@@ -412,7 +412,7 @@ int main(int argc, char *argv[]) {
         step++;
     }
 
-    std::cout << "Indexes were generated." << std::endl;
+    //std::cout << "Indexes were generated." << std::endl;
 
     std::vector<Graph<size>> not_ismorfic;
     auto start = std::chrono::high_resolution_clock::now();
@@ -435,16 +435,12 @@ int main(int argc, char *argv[]) {
             for (int j = 0; j < int(not_ismorfic.size()); ++j) {
                 if (graph % not_ismorfic[j]) {
                     was_same = true;
-                    //std::cout << i << " " << j << std::endl;
                     break;
                 }
             }
 
             if (!was_same) {
                 not_ismorfic.push_back(graph);
-                std::cout << cnt << " - step" << std::endl;
-                std::cout << not_ismorfic.size() << " - found" << std::endl;
-                std::cout << std::endl;
             }
             if (correct_cnt_tree[size] == int(not_ismorfic.size())) {
                 break;
@@ -454,12 +450,10 @@ int main(int argc, char *argv[]) {
     } while (std::prev_permutation(combinations.begin(), combinations.end()));
     auto stop = std::chrono::high_resolution_clock::now();
     double duration = double((std::chrono::duration_cast<std::chrono::microseconds>(stop - start)).count()) / 1000.0;
-    std::cout << "All trees were generated." << std::endl;
-    std::cout << "Non-isomorfic trees were found." << std::endl;
 
     std::cout << not_ismorfic.size() << std::endl;
     for (int i = 0; i < int(not_ismorfic.size()); ++i) {
-        std::cout << not_ismorfic[i] << std::endl << std::endl;
+        std::cout << not_ismorfic[i] << std::endl;
     }
     std::cout << "Execution time: " << duration << " ms." << std::endl;
     return 0;
