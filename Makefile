@@ -2,6 +2,7 @@ PP = g++
 CL = clang++
 PY = python3
 SRC = src
+SCRPT = scripts
 
 all: clean clang_graph
 
@@ -12,7 +13,7 @@ gpp_graph:
 	$(PP) $(SRC)/Graph.cpp -std=c++2b -Wall -Werror -O3 -o Graph
 
 draw_tree_classes:
-	$(PY) $(SRC)/drawGraph.py
+	$(PY) $(SCRPT)/drawGraph.py
 
 clean:
 	rm -f Graph

@@ -43,5 +43,5 @@ for file in range(start_file, finish_file + 1):
         subax = plt.subplot(rows, cols, gr + 1)
         nx.draw(G)
 
-    plt.savefig("images/tree" + str(file) + ".png")
+    plt.savefig("images/tree" + "0" * (2 - len(str(file))) + str(file) + ".png")
     fin.close()

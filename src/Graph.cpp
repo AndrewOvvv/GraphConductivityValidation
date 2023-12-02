@@ -387,7 +387,7 @@ std::ostream& operator<<(std::ostream& os, const Graph<size>& graph) {
 
 int main(int argc, char *argv[]) {
     std::vector<int> correct_cnt_tree = {1, 1, 1, 1, 2, 3, 6, 11, 23, 47, 106, 235};
-    const int size = 10;
+    const int size = 8;
 
     std::vector<bool> combinations(size * (size - 1) / 2);
     std::vector<std::pair<int, int>> indexes(size * (size - 1) / 2);
