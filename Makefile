@@ -1,19 +1,17 @@
-PP = g++
 CL = clang++
 PY = python3
+
 SRC = src
 SCRPT = scripts
+INCLUDE = include
 
-all: clean clang_graph
+all: clean generate_graphs
 
-clang_graph:
-	$(CL) $(SRC)/Graph.cpp -std=c++2b -Wall -Werror -O3 -o Graph
-
-gpp_graph:
-	$(PP) $(SRC)/Graph.cpp -std=c++2b -Wall -Werror -O3 -o Graph
+generate_graphs:
+	$(CL) $(SRC)/generate_graphs.cpp -I $(INCLUDE) -std=c++2b -Wall -Werror -O3 -o generate_graphs
 
 draw_tree_classes:
 	$(PY) $(SCRPT)/drawGraph.py
 
 clean:
-	rm -f Graph
+	rm -f generate_graphs
