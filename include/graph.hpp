@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstddef>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 
@@ -72,6 +73,7 @@ namespace graph {
                    ((this->e).first == (other.e).first && (this->e).second < (other.e).second);
         }
     };
+
 
 
     template<std::size_t size>
@@ -217,6 +219,24 @@ namespace graph {
                 }
             }
             return new_graph;
+        }
+
+        std::vector<std::vector<std::pair<double, double>>> convert_to_system(
+                                                                            std::pair<double, double> edge, 
+                                                                            std::pair<double, double> no_edge) const {
+            std::vector<std::vector<std::pair<double, double>>> result(
+                                                                        size,
+                                                                        std::vector<std::pair<double, double>> (size));
+            for (int i = 0; i < size; ++i) {
+                for (int j = 0; j < size; ++j) {
+                    if (graph[i, j]) {
+                        result[i][j] = edge;
+                    } else {
+                        result[i][j] = no_edge;
+                    }
+                }
+            }
+            return result;
         }
 
 

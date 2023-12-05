@@ -20,7 +20,7 @@ double get_conductivity(const graph::Graph<size>& graph, std::size_t start, std:
     std::pair<double, double> gamma = std::make_pair(0.01, 1); // амплитуда с длиной волновода перехода из полости в полости
     std::pair<double, double> pair_zero = std::make_pair(0, 0); // нет перехода
                                                                 //
-    Matrix<std::pair<double, double>> waveguides_parametrs({{pair_zero, gamma, pair_zero}, {gamma, pair_zero, gamma}, {pair_zero, gamma, pair_zero}}); // матрица параметров
+    Matrix<std::pair<double, double>> waveguides_parametrs(graph.convert_to_system(gamma, pair_zero)); // матрица параметров
     
     State state(grid_atoms);
     state.set_waveguide(waveguides_parametrs);
@@ -41,6 +41,11 @@ double get_conductivity(const graph::Graph<size>& graph, std::size_t start, std:
     auto time_vec = linspace(0, 100000, 100000);
 
     auto probs = Evolution::quantum_master_equation(init_state, H, time_vec);
+
+    state.set_n(0, 0);
+    auto global_row = state.get_index(H.get_basis());
+    auto zero_state_probs = blocked_matrix_get_row(probs.ctxt(), probs, global_row);
+
     /*
     //probs.show();
 
@@ -55,7 +60,7 @@ double get_conductivity(const graph::Graph<size>& graph, std::size_t start, std:
     }
     */
     MPI_Finalize();
-
+    return zero_state_probs[finish]; // TODO
 }
 
 template<std::size_t size>
