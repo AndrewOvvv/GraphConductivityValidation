@@ -131,7 +131,7 @@ namespace graph {
             return m[x];
         }
 
-        const bool& operator[](std::size_t x, std::size_t y) const {
+        const bool& operator()(std::size_t x, std::size_t y) const {
             if (size <= x || size <= y) {
                 throw "Error - graph subscriptor: incorect index value";
             }
@@ -213,7 +213,7 @@ namespace graph {
             std::vector<std::vector<std::size_t>> new_graph(size);
             for (std::size_t i = 0; i < size; ++i) {
                 for (std::size_t j = 0; j < size; ++j) {
-                    if ((*this)[i, j]) {
+                    if ((*this)(i, j)) {
                         new_graph[i].push_back(j);
                     }
                 }
@@ -229,7 +229,7 @@ namespace graph {
                                                                         std::vector<std::pair<double, double>> (size));
             for (int i = 0; i < size; ++i) {
                 for (int j = 0; j < size; ++j) {
-                    if (graph[i, j]) {
+                    if ((*this)(i, j)) {
                         result[i][j] = edge;
                     } else {
                         result[i][j] = no_edge;
@@ -245,7 +245,7 @@ namespace graph {
             Graph<size> new_graph(*this);
             for (std::size_t i = 0; i < size; ++i) {
                 for (std::size_t j = 0; j < size; ++j) {
-                    if (other[i, j]) {
+                    if (other(i, j)) {
                         new_graph += Edge(i, j);
                     }
                 }
@@ -257,7 +257,7 @@ namespace graph {
             Graph<size> new_graph(*this);
             for (std::size_t i = 0; i < size; ++i) {
                 for (std::size_t j = 0; j < size; ++j) {
-                    if (other[i, j]) {
+                    if (other(i, j)) {
                         new_graph -= Edge(i, j);
                     }
                 }
@@ -280,7 +280,7 @@ namespace graph {
         Graph<size>& operator+=(const Graph<size>& other) {
             for (std::size_t i = 0; i < size; ++i) {
                 for (std::size_t j = 0; j < size; ++j) {
-                    if (other[i, j]) {
+                    if (other(i , j)) {
                         (*this) += Edge(i, j);
                     }
                 }
@@ -291,7 +291,7 @@ namespace graph {
         Graph<size>& operator-=(const Graph<size>& other) {
             for (std::size_t i = 0; i < size; ++i) {
                 for (std::size_t j = 0; j < size; ++j) {
-                    if (other[i, j]) {
+                    if (other(i, j)) {
                         (*this) -= Edge(i, j);
                     }
                 }
@@ -370,7 +370,7 @@ namespace graph {
     void dfs(std::size_t vertex, const Graph<size>& graph, std::vector<int>& used) {
         used[vertex] = true;
         for (std::size_t i = 0; i < size; ++i) {
-            if (graph[vertex, i] && !used[i]) {
+            if (graph(vertex, i) && !used[i]) {
                 dfs(i, graph, used);
             }
         }
@@ -393,7 +393,7 @@ namespace graph {
         os << size << std::endl;
         for (std::size_t i = 0; i < size; ++i) {
             for (std::size_t j = 0; j < size; ++j) {
-                if (graph[i, j]) {
+                if (graph(i, j)) {
                     os << '1';
                 } else {
                     os << '0';
@@ -407,10 +407,10 @@ namespace graph {
     template<std::size_t size>
     std::istream& operator>>(std::istream& is, Graph<size>& graph) {
         int new_size; is >> new_size;
-        for (std::size_t i = 0; i < size; ++i) {
-            for (std::size_t j = 0; j < size; ++j) {
+        for (std::size_t i = 0; i < new_size; ++i) {
+            for (std::size_t j = 0; j < new_size; ++j) {
                 char c; is >> c;
-                if (c == '0') {
+                if (c == '1') {
                     graph += {i, j};
                 } else {
                     graph -= {i, j};
