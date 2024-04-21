@@ -41,7 +41,7 @@ for file in range(start_file, finish_file + 1):
                 if current[j] == '1':
                     G.add_edge(i, j)
         subax = plt.subplot(rows, cols, gr + 1)
-        nx.draw(G)
+        nx.draw(G)#, with_labels=True)
 
     plt.savefig("images/tree" + "0" * (2 - len(str(file))) + str(file) + ".png")
     fin.close()
