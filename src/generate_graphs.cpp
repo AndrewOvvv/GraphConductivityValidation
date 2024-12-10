@@ -2,76 +2,44 @@
 #include <chrono>
 #include "graph.hpp"
 
+const int size = 100;
+
 int main(int argc, char *argv[]) {
-    std::vector<int> correct_cnt_tree = {1, 1, 1, 1, 2, 3, 6, 11, 23, 47, 106, 235};
-    const int size = 8;
-
-    std::vector<bool> combinations(size * (size - 1) / 2);
-    std::vector<std::pair<int, int>> indexes(size * (size - 1) / 2);
-    std::fill(combinations.begin(), combinations.begin() + size - 1, true);
-
     graph::Graph<size> graph;
+    int group_size = 25;
+    int group_cnt = size / group_size;
 
-    int step = 0;
-    int first_v = 0, second_v = 1;
-    int curr_size = size - 1;
-    for (int i = 0; i < int(indexes.size()); ++i) {
-        if (step >= curr_size) {
-            first_v++;
-            second_v = first_v + 1;
-            curr_size--;
-            step = 0;
-        }
-
-        indexes[i] = {first_v, second_v};
-
-        second_v++;
-        step++;
-    }
-
-    //std::cout << "Indexes were generated." << std::endl;
-
-    std::vector<graph::Graph<size>> not_ismorfic;
+    // get start generation time
     auto start = std::chrono::high_resolution_clock::now();
 
-    int cnt = 0;
+    // in-groups connection generation
+    for (int i = 0; i < group_size; ++i) {
+        for (int j = 0; j < group_cnt; ++j) {
+            graph += {j * group_size + i, j * group_size + ((i + 1) % group_size)};
+        }
+    }
 
-    do {
-        if (cnt % 1000000 == 0) {
-            std::cout << "Reach step: " << cnt << std::endl;
-        }
-        for (int i = 0; i < int(combinations.size()); ++i) {
-            if (combinations[i]) {
-                graph += indexes[i];
-            } else {
-                graph -= indexes[i];
+    // inter-group connections
+    for (int i = 0; i < group_cnt; ++i) {
+        for (int j = 0; j < group_cnt; ++j) {
+            if (i != j) {
+                graph += {i * group_size, j * group_size};
             }
         }
-        if (~graph) {
-            bool was_same = false;
-            for (int j = 0; j < int(not_ismorfic.size()); ++j) {
-                if (graph % not_ismorfic[j]) {
-                    was_same = true;
-                    break;
-                }
-            }
+    }
 
-            if (!was_same) {
-                not_ismorfic.push_back(graph);
-            }
-            if (correct_cnt_tree[size] == int(not_ismorfic.size())) {
-                break;
-            }
-        }
-        ++cnt;
-    } while (std::prev_permutation(combinations.begin(), combinations.end()));
+    for (int i = 0; i < group_cnt; ++i) {
+        int cgroup = i;
+        int ngroup = (i + 1) % group_cnt;
+        graph += {cgroup * group_size + 1, ngroup * group_size + (group_size - 2)};
+    }
+
+    // get finish generation time
     auto stop = std::chrono::high_resolution_clock::now();
+    // get duration of graph generation
     double duration = double((std::chrono::duration_cast<std::chrono::microseconds>(stop - start)).count()) / 1000.0;
 
-    std::cout << not_ismorfic.size() << std::endl;
-    for (int i = 0; i < int(not_ismorfic.size()); ++i) {
-        std::cout << not_ismorfic[i] << std::endl;
-    }
+    std::cout << graph << std::endl;
     std::cout << "Execution time: " << duration << " ms." << std::endl;
     return 0;
 }

@@ -311,7 +311,7 @@ namespace graph {
                 return false;
             }
         }
-        return graph[edge[0], edge[1]];
+        return graph(edge[0], edge[1]);
     }
 
     template<std::size_t size>
