@@ -2,24 +2,27 @@
 #include <chrono>
 #include "graph.hpp"
 
-const int size = 100;
+const int size = 30;
 
 int main(int argc, char *argv[]) {
     graph::Graph<size> graph;
-    int group_size = 25;
-    int group_cnt = size / group_size;
+    int group_size = size / 2;
+    //int group_cnt = size / group_size;
 
     // get start generation time
     auto start = std::chrono::high_resolution_clock::now();
 
     // in-groups connection generation
+    /*
     for (int i = 0; i < group_size; ++i) {
         for (int j = 0; j < group_cnt; ++j) {
             graph += {j * group_size + i, j * group_size + ((i + 1) % group_size)};
         }
     }
+    */
 
     // inter-group connections
+    /*
     for (int i = 0; i < group_cnt; ++i) {
         for (int j = 0; j < group_cnt; ++j) {
             if (i != j) {
@@ -27,12 +30,20 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    */
 
+    for (int f = 0; f < group_size; ++f) {
+        graph += {f, group_size + (group_size + f) % group_size};
+        graph += {f, group_size + (group_size + f + 1) % group_size};
+    }
+
+    /*
     for (int i = 0; i < group_cnt; ++i) {
         int cgroup = i;
         int ngroup = (i + 1) % group_cnt;
-        graph += {cgroup * group_size + 1, ngroup * group_size + (group_size - 2)};
+        graph += {cgroup * group_size + 2, ngroup * group_size + (group_size - 2)};
     }
+    */
 
     // get finish generation time
     auto stop = std::chrono::high_resolution_clock::now();
