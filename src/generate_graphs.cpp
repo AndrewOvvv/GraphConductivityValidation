@@ -2,7 +2,7 @@
 #include <chrono>
 #include "graph.hpp"
 
-const int size = 30;
+const int size = 40;
 
 int main(int argc, char *argv[]) {
     graph::Graph<size> graph;

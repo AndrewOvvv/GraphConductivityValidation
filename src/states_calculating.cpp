@@ -108,7 +108,7 @@ void calculate_conductivity(const std::vector<std::vector<bool>>& graph, int arg
 }
 
 int main(int argc, char *argv[]) {
-    const int size = 30;
+    const int size = 40;
 
     int rank, world_size;
     MPI_Init(&argc, &argv);
