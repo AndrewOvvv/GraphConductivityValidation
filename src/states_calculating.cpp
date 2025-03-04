@@ -72,7 +72,8 @@ double get_conductivity(const std::vector<std::vector<bool>>& graph, std::size_t
     std::vector<std::pair<double, Operator<TCH_State>>> dec;
     dec.emplace_back(1, A);
     State<TCH_State> init_state(state);
-    H_TCH H(init_state, dec);
+    //H_TCH H(init_state, dec);
+    H_TCH H(init_state);
 
     //show_basis(H.get_basis());
 
@@ -107,7 +108,7 @@ void calculate_conductivity(const std::vector<std::vector<bool>>& graph, int arg
 }
 
 int main(int argc, char *argv[]) {
-    const int size = 100;
+    const int size = 20;
 
     int rank, world_size;
     MPI_Init(&argc, &argv);
