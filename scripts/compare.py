@@ -1,4 +1,4 @@
-fin = open("double_graph50_res", "r")
+fin = open("", "r")
 
 n = int(fin.readline())
 size = int(fin.readline())
