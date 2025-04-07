@@ -26,14 +26,14 @@ void WRITE_n(MPI_File *fout, int n, int size) {
     MPI_File_write_at(*fout, 4, &size, 1, MPI_INT, MPI_STATUS_IGNORE);
 }
 
-void WRITE_result(MPI_File *fout, int step, int start, int finish, double *p, int size) {
-    //MPI_Offset off = 8 + step * (8 * size * size) + 8 * start * size + 8 * finish;
-    MPI_Offset off = 8 + step * (8 * 2000);
-    MPI_File_write_at(*fout, off, p, 2000, MPI_DOUBLE, MPI_STATUS_IGNORE);
+void WRITE_result(MPI_File *fout, int step, int start, int finish, double p, int size) {
+    MPI_Offset off = 8 + step * (8 * size * size) + 8 * start * size + 8 * finish;;
+
+    MPI_File_write_at(*fout, off, &p, 1, MPI_DOUBLE, MPI_STATUS_IGNORE);
 }
 
 template<std::size_t size>
-double* get_conductivity(const std::vector<std::vector<bool>>& graph, std::size_t start, std::size_t finish) {
+double get_conductivity(const std::vector<std::vector<bool>>& graph, std::size_t start, std::size_t finish) {
     using namespace QComputations;
     std::vector<size_t> grid_atoms(size, 0); // задаёт количество частиц в каждой полости, у нас везде будут 0
     //for (size_t i = 0; i < size; i++){ // size - number of cavities
@@ -77,15 +77,10 @@ double* get_conductivity(const std::vector<std::vector<bool>>& graph, std::size_
 
     //show_basis(H.get_basis());
 
-    auto time_vec = linspace(0, 500, 2000);
+    auto time_vec = linspace(0, 1000, 2000);
     auto probs = quantum_master_equation(init_state.fit_to_basis_state(H.get_basis()), H, time_vec);
 
-    for (int i = 0; i < time_vec.size(); ++i) {
-        std::cout << probs[probs.n() - 1][i] << " ";
-    }
-    std::cout << std::endl;
-
-    return probs[probs.n() - 1];
+    return probs[probs.n() - 1][time_vec.size() - 1];
 }
 
 template<std::size_t size>
@@ -97,23 +92,19 @@ void calculate_conductivity(const std::vector<std::vector<bool>>& graph, int arg
 
     size_t start_col, count;
 
-    //make_rank_map(size, rank, world_size, start_col, count);
+    make_rank_map(size, rank, world_size, start_col, count);
 
-    get_conductivity<size>(graph, start_col, size / 2);
-    //WRITE_result(fout, step, start_col, size / 2, p, size);
-    /*
     for (std::size_t start = start_col; start < start_col + count; ++start) {
         std::cout << start << std::endl;
         for (std::size_t finish = 0; finish < size; ++finish) {
             if (start != finish) {
-                auto p = get_conductivity<size>(graph, start, finish);
+                double p = get_conductivity<size>(graph, start, finish);
                 WRITE_result(fout, step, start, finish, p, size);
             } else if (start == finish) {
-                WRITE_result(fout, step, start, finish, std::vector<double> p(2000, -1), graph.size());
+                WRITE_result(fout, step, start, finish, -1, graph.size());
             }
         }
     }
-    */
 }
 
 int main(int argc, char *argv[]) {
@@ -153,6 +144,7 @@ int main(int argc, char *argv[]) {
 
     int n;
     READ_n(&fin, &n);
+
     WRITE_n(&fout, n, size);
 
     //std::cout << n << std::endl;
@@ -162,6 +154,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < n; ++i) {
         //std::cout << i << std::endl;
         READ_graph(&fin, i, g);
+
         calculate_conductivity<size>(g, argc, argv, i, &fout);
 
         /*
