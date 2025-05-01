@@ -27,11 +27,11 @@ def plot_matrix_values(matrices_dict, figsize=(12, 8), save_path=None):
         
         # Строим линию для текущей матрицы
         plt.plot(values, weighted_counts, marker='o', linestyle='-', 
-                 label=f'Матрица {matrix_num}')
+                 label=f'Матрица предельных проводимостей {matrix_num}')
     
-    plt.xlabel('Значения')
-    plt.ylabel('Взвешенная частота')
-    plt.title('Распределение значений в матрицах')
+    plt.xlabel('Значения предельных проводимостей в графах')
+    plt.ylabel('Количество значений в процентном соотношении')
+    plt.title('Распределение значений предельных проводимостей для графов')
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.legend()
     plt.tight_layout()
